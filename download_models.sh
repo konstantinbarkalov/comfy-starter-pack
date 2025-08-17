@@ -63,10 +63,11 @@ BASE_DIR=$(eval echo "$BASE_DIR_RAW")
 CHECKPOINT_DIR="$BASE_DIR/$(jq -r '.directories.checkpoints' "$MODELS_FILE")"
 LORA_DIR="$BASE_DIR/$(jq -r '.directories.loras' "$MODELS_FILE")"
 CONTROLNET_DIR="$BASE_DIR/$(jq -r '.directories.controlnets' "$MODELS_FILE")"
+VAE_DIR="$BASE_DIR/$(jq -r '.directories.vaes' "$MODELS_FILE")" # Added VAE directory
 log_msg "INFO" "$C_BLUE" "Configuration loaded successfully."
 
 # --- Directory Creation ---
-mkdir -p "$CHECKPOINT_DIR" "$LORA_DIR" "$CONTROLNET_DIR"
+mkdir -p "$CHECKPOINT_DIR" "$LORA_DIR" "$CONTROLNET_DIR" "$VAE_DIR"
 
 # --- Download Functions ---
 
@@ -142,7 +143,6 @@ current_model=0
 log_msg "INFO" "$C_BLUE" "Found $total_models models to process."
 echo -e "${C_BLUE}---------------------------------------------${C_RESET}"
 
-# FIX APPLIED HERE: Using process substitution instead of a pipe
 while read -r model_json; do
     ((current_model++))
     url=$(echo "$model_json" | jq -r '.url')
@@ -156,6 +156,7 @@ while read -r model_json; do
         "checkpoint") dest_dir="$CHECKPOINT_DIR" ;;
         "lora")       dest_dir="$LORA_DIR" ;;
         "controlnet") dest_dir="$CONTROLNET_DIR" ;;
+        "vae")        dest_dir="$VAE_DIR" ;; # Added VAE case
         *)
             log_msg "ERROR" "$C_RED" "Unknown model type '$type' for '$filename'. Skipping."
             ((FAIL_COUNT++)); continue ;;
@@ -184,7 +185,7 @@ while read -r model_json; do
         2) ((SKIP_COUNT++)) ;;
     esac
     echo -e "${C_BLUE}---------------------------------------------${C_RESET}"
-done < <(jq -c '.models[]' "$MODELS_FILE") # This is the corrected line
+done < <(jq -c '.models[]' "$MODELS_FILE")
 
 # --- Final Summary ---
 log_msg "INFO" "$C_BLUE" "All tasks finished."
