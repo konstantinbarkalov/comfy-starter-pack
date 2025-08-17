@@ -1,0 +1,26 @@
+{
+  "directories": {
+    "base": "/workspace/ComfyUI/models",
+    "checkpoints": "checkpoints",
+    "loras": "loras",
+    "controlnets": "controlnet"
+  },
+  "models": [
+    {
+      "url": "https://civitai.com/models/117153/dreamshaper-xl-turbo",
+      "type": "checkpoint"
+    },
+    {
+      "url": "https://civitai.com/models/16576/anime-lineart-manga-like-style",
+      "type": "lora"
+    },
+    {
+      "url": "https://huggingface.co/lllyasviel/ControlNet-v1-1",
+      "type": "controlnet"
+    },
+    {
+      "url": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/main/sd_xl_base_1.0.safetensors",
+      "type": "checkpoint"
+    }
+  ]
+}
