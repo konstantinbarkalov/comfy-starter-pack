@@ -60,10 +60,10 @@ CIVITAI_API_KEY=$(jq -r '.api_keys.civitai' "$SECRETS_FILE")
 HUGGINGFACE_TOKEN=$(jq -r '.api_keys.huggingface' "$SECRETS_FILE")
 BASE_DIR_RAW=$(jq -r '.directories.base' "$MODELS_FILE")
 BASE_DIR=$(eval echo "$BASE_DIR_RAW")
-CHECKPOINT_DIR="$BASE_DIR/$(jq -r '.directories.checkpoints' "$MODELS_FILE")"
-LORA_DIR="$BASE_DIR/$(jq -r '.directories.loras' "$MODELS_FILE")"
-CONTROLNET_DIR="$BASE_DIR/$(jq -r '.directories.controlnets' "$MODELS_FILE")"
-VAE_DIR="$BASE_DIR/$(jq -r '.directories.vaes' "$MODELS_FILE")" # Added VAE directory
+CHECKPOINT_DIR="$BASE_DIR/$(jq -r '.directories.checkpoint' "$MODELS_FILE")" # CORRECTED
+LORA_DIR="$BASE_DIR/$(jq -r '.directories.lora' "$MODELS_FILE")"             # CORRECTED
+CONTROLNET_DIR="$BASE_DIR/$(jq -r '.directories.controlnet' "$MODELS_FILE")"
+VAE_DIR="$BASE_DIR/$(jq -r '.directories.vae' "$MODELS_FILE")"
 log_msg "INFO" "$C_BLUE" "Configuration loaded successfully."
 
 # --- Directory Creation ---
@@ -156,7 +156,7 @@ while read -r model_json; do
         "checkpoint") dest_dir="$CHECKPOINT_DIR" ;;
         "lora")       dest_dir="$LORA_DIR" ;;
         "controlnet") dest_dir="$CONTROLNET_DIR" ;;
-        "vae")        dest_dir="$VAE_DIR" ;; # Added VAE case
+        "vae")        dest_dir="$VAE_DIR" ;;
         *)
             log_msg "ERROR" "$C_RED" "Unknown model type '$type' for '$filename'. Skipping."
             ((FAIL_COUNT++)); continue ;;
