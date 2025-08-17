@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-# SCRIPT LOGIC - Reads configuration and downloads single files with custom names.
+# SCRIPT LOGIC - Directly downloads files from a list with custom names.
 # ==============================================================================
 
 # --- Default Configuration Files ---
@@ -60,8 +60,8 @@ CIVITAI_API_KEY=$(jq -r '.api_keys.civitai' "$SECRETS_FILE")
 HUGGINGFACE_TOKEN=$(jq -r '.api_keys.huggingface' "$SECRETS_FILE")
 BASE_DIR_RAW=$(jq -r '.directories.base' "$MODELS_FILE")
 BASE_DIR=$(eval echo "$BASE_DIR_RAW")
-CHECKPOINT_DIR="$BASE_DIR/$(jq -r '.directories.checkpoint' "$MODELS_FILE")" # CORRECTED
-LORA_DIR="$BASE_DIR/$(jq -r '.directories.lora' "$MODELS_FILE")"             # CORRECTED
+CHECKPOINT_DIR="$BASE_DIR/$(jq -r '.directories.checkpoint' "$MODELS_FILE")"
+LORA_DIR="$BASE_DIR/$(jq -r '.directories.lora' "$MODELS_FILE")"
 CONTROLNET_DIR="$BASE_DIR/$(jq -r '.directories.controlnet' "$MODELS_FILE")"
 VAE_DIR="$BASE_DIR/$(jq -r '.directories.vae' "$MODELS_FILE")"
 log_msg "INFO" "$C_BLUE" "Configuration loaded successfully."
@@ -69,43 +69,8 @@ log_msg "INFO" "$C_BLUE" "Configuration loaded successfully."
 # --- Directory Creation ---
 mkdir -p "$CHECKPOINT_DIR" "$LORA_DIR" "$CONTROLNET_DIR" "$VAE_DIR"
 
-# --- Download Functions ---
-
-download_civitai() {
-    local url=$1
-    local dest_dir=$2
-    local filename=$3
-    local model_id=$(echo "$url" | grep -oP 'models/\K[0-9]+')
-    
-    local final_path="$dest_dir/$filename"
-    if [ -f "$final_path" ]; then
-        log_msg "SKIP" "$C_YELLOW" "File '$filename' already exists."
-        return 2
-    fi
-
-    log_msg "INFO" "$C_BLUE" "Querying Civitai API for model ID: $model_id"
-    local api_url="https://civitai.com/api/v1/models/$model_id"
-    local json_response=$(curl -s -H "Authorization: Bearer $CIVITAI_API_KEY" "$api_url")
-    local download_url=$(echo "$json_response" | jq -r '.modelVersions[0].files[0].downloadUrl')
-
-    if [[ "$download_url" == "null" || -z "$download_url" ]]; then
-        log_msg "ERROR" "$C_RED" "Failed to find a download URL in the API response for model ID $model_id."
-        return 1
-    fi
-
-    log_msg "INFO" "$C_BLUE" "Starting download for '$filename'..."
-    if ! wget -O "$final_path.tmp" "${download_url}?token=${CIVITAI_API_KEY}" --progress=bar:force; then
-        log_msg "ERROR" "$C_RED" "Download failed for '$filename'. See wget output above."
-        rm -f "$final_path.tmp"
-        return 1
-    fi
-
-    mv "$final_path.tmp" "$final_path"
-    log_msg "SUCCESS" "$C_GREEN" "Successfully downloaded '$filename'."
-    return 0
-}
-
-download_huggingface() {
+# --- Universal Download Function ---
+download_file() {
     local url=$1
     local dest_dir=$2
     local filename=$3
@@ -116,15 +81,20 @@ download_huggingface() {
         return 2
     fi
 
-    local download_url=${url/blob\//resolve/}
-    
-    local hf_header=""
-    if [[ -n "$HUGGINGFACE_TOKEN" && "$HUGGINGFACE_TOKEN" != "YOUR_HUGGINGFACE_TOKEN_HERE" ]]; then
-        hf_header="--header=\"Authorization: Bearer $HUGGINGFACE_TOKEN\""
+    # Prepare headers for wget
+    local wget_headers=""
+    if [[ "$url" == *"huggingface.co"* && -n "$HUGGINGFACE_TOKEN" && "$HUGGINGFACE_TOKEN" != "YOUR_HUGGINGFACE_TOKEN_HERE" ]]; then
+        wget_headers="--header=\"Authorization: Bearer $HUGGINGFACE_TOKEN\""
+    elif [[ "$url" == *"civitai.com"* && -n "$CIVITAI_API_KEY" && "$CIVITAI_API_KEY" != "YOUR_CIVITAI_API_KEY_HERE" ]]; then
+        # Append API key as a token for Civitai URLs
+        url="${url}&token=${CIVITAI_API_KEY}"
     fi
     
+    # Convert HF blob URLs to resolve URLs for direct download
+    url=${url/blob\//resolve/}
+
     log_msg "INFO" "$C_BLUE" "Starting download for '$filename'..."
-    if ! eval wget $hf_header -O "'$final_path.tmp'" "'$download_url'" --progress=bar:force; then
+    if ! eval wget $wget_headers -O "'$final_path.tmp'" "'$url'" --progress=bar:force; then
         log_msg "ERROR" "$C_RED" "Download failed for '$filename'. See wget output above."
         rm -f "$final_path.tmp"
         return 1
@@ -134,7 +104,6 @@ download_huggingface() {
     log_msg "SUCCESS" "$C_GREEN" "Successfully downloaded '$filename'."
     return 0
 }
-
 
 # --- Main Processing Loop ---
 total_models=$(jq '.models | length' "$MODELS_FILE")
@@ -167,17 +136,8 @@ while read -r model_json; do
         ((FAIL_COUNT++)); continue
     fi
 
-    result=0
-    if [[ "$url" == *"civitai.com"* ]]; then
-        download_civitai "$url" "$dest_dir" "$filename"
-        result=$?
-    elif [[ "$url" == *"huggingface.co"* ]]; then
-        download_huggingface "$url" "$dest_dir" "$filename"
-        result=$?
-    else
-        log_msg "ERROR" "$C_RED" "Unknown source for URL '$url'. Skipping."
-        result=1
-    fi
+    download_file "$url" "$dest_dir" "$filename"
+    result=$?
 
     case $result in
         0) ((SUCCESS_COUNT++)) ;;
