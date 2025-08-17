@@ -33,37 +33,37 @@
       "filename": "openjourney_v4.safetensors"
     },
     {
-      "url": "https://civitai.com/models/483031",
+      "url": "https://civitai.com/api/download/models/483031?type=Model&format=SafeTensor&size=pruned&fp=fp16",
       "type": "checkpoint",
       "filename": "ra_render_architecture.safetensors"
     },
     {
-      "url": "https://civitai.com/models/140423",
+      "url": "https://civitai.com/api/download/models/140423?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "chiasedamme_urban_v6.safetensors"
     },
     {
-      "url": "https://civitai.com/models/112253",
+      "url": "https://civitai.com/api/download/models/112253?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "urban_realistic.safetensors"
     },
     {
-      "url": "https://civitai.com/models/1457492",
+      "url": "https://civitai.com/api/download/models/1457492?type=Model&format=SafeTensor&size=full&fp=fp32",
       "type": "checkpoint",
       "filename": "robot.safetensors"
     },
     {
-      "url": "https://civitai.com/models/22240",
+      "url": "https://civitai.com/api/download/models/22240?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "fruit_fussion.safetensors"
     },
     {
-      "url": "https://civitai.com/models/18512",
+      "url": "https://civitai.com/api/download/models/18512?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "cheese_daddys_landscapes_mix.safetensors"
     },
     {
-      "url": "https://civitai.com/models/85831",
+      "url": "https://civitai.com/api/download/models/85831?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "product_design_minimalism.safetensors"
     }
