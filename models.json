@@ -10,12 +10,62 @@
     {
       "url": "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors",
       "type": "vae",
-      "filename": "vae-ft-mse-840000-ema-pruned.safetensors"
+      "filename": "sd_vae_ft_mse_840000.safetensors"
     },
     {
       "url": "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors",
       "type": "checkpoint",
       "filename": "sd_v1-5_pruned_emaonly.safetensors"
+    },
+    {
+      "url": "https://huggingface.co/dreamlike-art/dreamlike-photoreal-2.0/resolve/main/dreamlike-photoreal-2.0.safetensors",
+      "type": "checkpoint",
+      "filename": "dreamlike_photoreal_v2.safetensors"
+    },
+    {
+      "url": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0/resolve/main/dreamlike-diffusion-1.0.safetensors",
+      "type": "checkpoint",
+      "filename": "dreamlike_diffusion_v1.safetensors"
+    },
+    {
+      "url": "https://huggingface.co/prompthero/openjourney/resolve/main/mdjrny-v4.safetensors",
+      "type": "checkpoint",
+      "filename": "openjourney_v4.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/483031",
+      "type": "checkpoint",
+      "filename": "ra_render_architecture.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/140423",
+      "type": "checkpoint",
+      "filename": "chiasedamme_urban_v6.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/112253",
+      "type": "checkpoint",
+      "filename": "urban_realistic.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/1457492",
+      "type": "checkpoint",
+      "filename": "robot.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/22240",
+      "type": "checkpoint",
+      "filename": "fruit_fussion.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/18512",
+      "type": "checkpoint",
+      "filename": "cheese_daddys_landscapes_mix.safetensors"
+    },
+    {
+      "url": "https://civitai.com/models/85831",
+      "type": "checkpoint",
+      "filename": "product_design_minimalism.safetensors"
     }
   ]
 }
