@@ -1,30 +1,21 @@
 {
   "directories": {
-    "base": "$HOME/stable-diffusion-webui/models",
-    "checkpoints": "Stable-diffusion",
-    "loras": "Lora",
-    "controlnets": "ControlNet"
+    "base": "/workspace/ComfyUI/models",
+    "checkpoint": "checkpoints",
+    "lora": "loras",
+    "controlnet": "controlnet",
+    "vae": "vae"
   },
   "models": [
     {
-      "url": "https://civitai.com/models/117153/dreamshaper-xl-turbo",
+      "url": "https://huggingface.co/stabilityai/sd-vae-ft-mse-original/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors",
+      "type": "vae",
+      "filename": "vae-ft-mse-840000-ema-pruned.safetensors"
+    },
+    {
+      "url": "https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors",
       "type": "checkpoint",
-      "filename": "DreamShaperXL_Turbo.safetensors"
-    },
-    {
-      "url": "https://civitai.com/models/16576/anime-lineart-manga-like-style",
-      "type": "lora",
-      "filename": "AnimeLineart.safetensors"
-    },
-    {
-      "url": "https://huggingface.co/lllyasviel/ControlNet-v1-1/blob/main/control_v11p_sd15_canny.pth",
-      "type": "controlnet",
-      "filename": "control_v11p_sd15_canny.pth"
-    },
-    {
-      "url": "https://huggingface.co/lllyasviel/ControlNet-v1-1/blob/main/control_v11f1p_sd15_depth.pth",
-      "type": "controlnet",
-      "filename": "control_v11p_sd15_depth.pth"
+      "filename": "sd_v1-5_pruned_emaonly.safetensors"
     }
   ]
 }
