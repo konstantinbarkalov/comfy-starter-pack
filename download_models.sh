@@ -115,7 +115,6 @@ download_huggingface() {
         return 2
     fi
 
-    # Convert a '/blob/' URL to a direct '/resolve/' download link
     local download_url=${url/blob\//resolve/}
     
     local hf_header=""
@@ -143,7 +142,8 @@ current_model=0
 log_msg "INFO" "$C_BLUE" "Found $total_models models to process."
 echo -e "${C_BLUE}---------------------------------------------${C_RESET}"
 
-jq -c '.models[]' "$MODELS_FILE" | while read -r model_json; do
+# FIX APPLIED HERE: Using process substitution instead of a pipe
+while read -r model_json; do
     ((current_model++))
     url=$(echo "$model_json" | jq -r '.url')
     type=$(echo "$model_json" | jq -r '.type')
@@ -184,7 +184,7 @@ jq -c '.models[]' "$MODELS_FILE" | while read -r model_json; do
         2) ((SKIP_COUNT++)) ;;
     esac
     echo -e "${C_BLUE}---------------------------------------------${C_RESET}"
-done
+done < <(jq -c '.models[]' "$MODELS_FILE") # This is the corrected line
 
 # --- Final Summary ---
 log_msg "INFO" "$C_BLUE" "All tasks finished."
