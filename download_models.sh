@@ -1,9 +1,7 @@
 #!/bin/bash
 # ==============================================================================
-# SCRIPT LOGIC - Reads configuration and downloads models with robust logging.
+# SCRIPT LOGIC - Reads configuration and downloads single files with custom names.
 # ==============================================================================
-# 'set -e' is removed to allow for custom error handling within the loop.
-# The script will exit if initial configuration fails.
 
 # --- Default Configuration Files ---
 MODELS_FILE="models.json"
@@ -75,51 +73,29 @@ mkdir -p "$CHECKPOINT_DIR" "$LORA_DIR" "$CONTROLNET_DIR"
 download_civitai() {
     local url=$1
     local dest_dir=$2
+    local filename=$3
     local model_id=$(echo "$url" | grep -oP 'models/\K[0-9]+')
     
-    if [ -z "$model_id" ]; then
-        log_msg "ERROR" "$C_RED" "Could not extract a valid Model ID from URL: $url"
-        return 1
+    local final_path="$dest_dir/$filename"
+    if [ -f "$final_path" ]; then
+        log_msg "SKIP" "$C_YELLOW" "File '$filename' already exists."
+        return 2
     fi
 
     log_msg "INFO" "$C_BLUE" "Querying Civitai API for model ID: $model_id"
     local api_url="https://civitai.com/api/v1/models/$model_id"
-    
-    # Use a temporary file for the curl output to handle errors better
-    local api_response_file=$(mktemp)
-    local http_status=$(curl -s -w "%{http_code}" -H "Authorization: Bearer $CIVITAI_API_KEY" "$api_url" -o "$api_response_file")
-
-    if [[ "$http_status" -ne 200 ]]; then
-        log_msg "ERROR" "$C_RED" "Civitai API returned HTTP status $http_status for model ID $model_id."
-        log_msg "INFO" "$C_BLUE" "Response: $(cat "$api_response_file")"
-        rm "$api_response_file"
-        return 1
-    fi
-    
-    local json_response=$(cat "$api_response_file")
-    rm "$api_response_file"
-
+    local json_response=$(curl -s -H "Authorization: Bearer $CIVITAI_API_KEY" "$api_url")
     local download_url=$(echo "$json_response" | jq -r '.modelVersions[0].files[0].downloadUrl')
-    local filename=$(echo "$json_response" | jq -r '.modelVersions[0].files[0].name')
 
     if [[ "$download_url" == "null" || -z "$download_url" ]]; then
         log_msg "ERROR" "$C_RED" "Failed to find a download URL in the API response for model ID $model_id."
-        log_msg "INFO" "$C_BLUE" "This often means the model was removed or the URL is incorrect."
         return 1
     fi
 
-    local final_path="$dest_dir/$filename"
-    log_msg "INFO" "$C_BLUE" "Identified file: '$filename'"
-
-    if [ -f "$final_path" ]; then
-        log_msg "SKIP" "$C_YELLOW" "File '$filename' already exists."
-        return 2 # Special return code for skipping
-    fi
-
-    log_msg "INFO" "$C_BLUE" "Starting download..."
+    log_msg "INFO" "$C_BLUE" "Starting download for '$filename'..."
     if ! wget -O "$final_path.tmp" "${download_url}?token=${CIVITAI_API_KEY}" --progress=bar:force; then
         log_msg "ERROR" "$C_RED" "Download failed for '$filename'. See wget output above."
-        rm -f "$final_path.tmp" # Clean up partial download
+        rm -f "$final_path.tmp"
         return 1
     fi
 
@@ -131,56 +107,34 @@ download_civitai() {
 download_huggingface() {
     local url=$1
     local dest_dir=$2
-
-    if [[ "$url" == *"/blob/"* || "$url" == *"/resolve/"* ]]; then
-        local download_url=${url/blob\//resolve/}
-        local filename=$(basename "$download_url")
-        local final_path="$dest_dir/$filename"
-
-        log_msg "INFO" "$C_BLUE" "Preparing to download single file: '$filename'"
-        if [ -f "$final_path" ]; then
-            log_msg "SKIP" "$C_YELLOW" "File '$filename' already exists."
-            return 2
-        fi
-        
-        local hf_header=""
-        if [[ -n "$HUGGINGFACE_TOKEN" ]]; then
-            hf_header="--header=\"Authorization: Bearer $HUGGINGFACE_TOKEN\""
-        fi
-        
-        log_msg "INFO" "$C_BLUE" "Starting download..."
-        if ! eval wget $hf_header -O "'$final_path.tmp'" "'$download_url'" --progress=bar:force; then
-            log_msg "ERROR" "$C_RED" "Download failed for '$filename'. See wget output above."
-            rm -f "$final_path.tmp"
-            return 1
-        fi
-        mv "$final_path.tmp" "$final_path"
-        log_msg "SUCCESS" "$C_GREEN" "Successfully downloaded '$filename'."
-        return 0
-    else
-        local repo_name=$(basename "$url")
-        local final_path="$dest_dir/$repo_name"
-        
-        log_msg "INFO" "$C_BLUE" "Preparing to clone repository: '$repo_name'"
-        if [ -d "$final_path" ]; then
-            log_msg "SKIP" "$C_YELLOW" "Directory '$repo_name' already exists."
-            return 2
-        fi
-
-        local clone_url="https://huggingface.co/$(echo "$url" | awk -F'/' '{print $(NF-1)"/"$NF}')"
-        if [[ -n "$HUGGINGFACE_TOKEN" ]]; then
-            clone_url="https://user:$HUGGINGFACE_TOKEN@huggingface.co/$(echo "$url" | awk -F'/' '{print $(NF-1)"/"$NF}')"
-        fi
-        
-        log_msg "INFO" "$C_BLUE" "Starting clone..."
-        if ! git clone "$clone_url" "$final_path"; then
-            log_msg "ERROR" "$C_RED" "Failed to clone repository '$repo_name'."
-            return 1
-        fi
-        log_msg "SUCCESS" "$C_GREEN" "Successfully cloned '$repo_name'."
-        return 0
+    local filename=$3
+    
+    local final_path="$dest_dir/$filename"
+    if [ -f "$final_path" ]; then
+        log_msg "SKIP" "$C_YELLOW" "File '$filename' already exists."
+        return 2
     fi
+
+    # Convert a '/blob/' URL to a direct '/resolve/' download link
+    local download_url=${url/blob\//resolve/}
+    
+    local hf_header=""
+    if [[ -n "$HUGGINGFACE_TOKEN" && "$HUGGINGFACE_TOKEN" != "YOUR_HUGGINGFACE_TOKEN_HERE" ]]; then
+        hf_header="--header=\"Authorization: Bearer $HUGGINGFACE_TOKEN\""
+    fi
+    
+    log_msg "INFO" "$C_BLUE" "Starting download for '$filename'..."
+    if ! eval wget $hf_header -O "'$final_path.tmp'" "'$download_url'" --progress=bar:force; then
+        log_msg "ERROR" "$C_RED" "Download failed for '$filename'. See wget output above."
+        rm -f "$final_path.tmp"
+        return 1
+    fi
+
+    mv "$final_path.tmp" "$final_path"
+    log_msg "SUCCESS" "$C_GREEN" "Successfully downloaded '$filename'."
+    return 0
 }
+
 
 # --- Main Processing Loop ---
 total_models=$(jq '.models | length' "$MODELS_FILE")
@@ -193,8 +147,9 @@ jq -c '.models[]' "$MODELS_FILE" | while read -r model_json; do
     ((current_model++))
     url=$(echo "$model_json" | jq -r '.url')
     type=$(echo "$model_json" | jq -r '.type')
+    filename=$(echo "$model_json" | jq -r '.filename')
 
-    log_msg "INFO" "$C_BLUE" "Processing [${current_model}/${total_models}]: $url"
+    log_msg "INFO" "$C_BLUE" "Processing [${current_model}/${total_models}]: '$filename'"
 
     dest_dir=""
     case "$type" in
@@ -202,18 +157,21 @@ jq -c '.models[]' "$MODELS_FILE" | while read -r model_json; do
         "lora")       dest_dir="$LORA_DIR" ;;
         "controlnet") dest_dir="$CONTROLNET_DIR" ;;
         *)
-            log_msg "ERROR" "$C_RED" "Unknown model type '$type' in models.json. Skipping."
-            ((FAIL_COUNT++))
-            continue
-            ;;
+            log_msg "ERROR" "$C_RED" "Unknown model type '$type' for '$filename'. Skipping."
+            ((FAIL_COUNT++)); continue ;;
     esac
+
+    if [[ -z "$filename" || "$filename" == "null" ]]; then
+        log_msg "ERROR" "$C_RED" "Missing 'filename' for URL '$url'. Skipping."
+        ((FAIL_COUNT++)); continue
+    fi
 
     result=0
     if [[ "$url" == *"civitai.com"* ]]; then
-        download_civitai "$url" "$dest_dir"
+        download_civitai "$url" "$dest_dir" "$filename"
         result=$?
     elif [[ "$url" == *"huggingface.co"* ]]; then
-        download_huggingface "$url" "$dest_dir"
+        download_huggingface "$url" "$dest_dir" "$filename"
         result=$?
     else
         log_msg "ERROR" "$C_RED" "Unknown source for URL '$url'. Skipping."
@@ -234,7 +192,5 @@ echo -e "${C_GREEN}Successful: $SUCCESS_COUNT${C_RESET}"
 echo -e "${C_YELLOW}Skipped: $SKIP_COUNT${C_RESET}"
 echo -e "${C_RED}Failed: $FAIL_COUNT${C_RESET}"
 
-if [ "$FAIL_COUNT" -gt 0 ]; then
-    exit 1
-fi
+if [ "$FAIL_COUNT" -gt 0 ]; then exit 1; fi
 exit 0
