@@ -17,6 +17,7 @@ Before you start, make sure you have these tools installed:
 On a Debian/Ubuntu system, you can install them all with:
 ```sh
 sudo apt-get update && sudo apt-get install -y git jq wget curl
+```
 
 🚀 Quickstart Guide
 1. Get the Files
