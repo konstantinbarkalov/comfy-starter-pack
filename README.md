@@ -26,7 +26,7 @@ sudo apt-get update && sudo apt-get install -y git jq wget curl
 Clone the repository to your machine:
 
 ```sh
-git clone [https://github.com/konstantinbarkalov/comfy-starter-pack.git](https://github.com/konstantinbarkalov/comfy-starter-pack.git)
+git clone https://github.com/konstantinbarkalov/comfy-starter-pack
 cd comfy-starter-pack
 ```
 
