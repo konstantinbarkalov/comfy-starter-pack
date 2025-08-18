@@ -60,7 +60,7 @@ Set the filename: Choose a clean name for the downloaded file.
 
 ```json
 {
-  "url": "[https://civitai.com/models/](https://civitai.com/models/)...",
+  "url": "https://civitai.com/models/...",
   "type": "lora",
   "filename": "my_favorite_lora.safetensors"
 }
