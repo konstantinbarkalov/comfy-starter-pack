@@ -19,39 +19,49 @@ On a Debian/Ubuntu system, you can install them all with:
 sudo apt-get update && sudo apt-get install -y git jq wget curl
 ```
 
-🚀 Quickstart Guide
+### 🚀 Quickstart Guide
+
 1. Get the Files
 
 Clone the repository to your machine:
 
+```sh
 git clone [https://github.com/konstantinbarkalov/comfy-starter-pack.git](https://github.com/konstantinbarkalov/comfy-starter-pack.git)
 cd comfy-starter-pack
+```
 
 2. Add Your API Keys
 
 Run the add_secrets.sh script to create your private secrets.json file. This file is already in .gitignore and will not be uploaded to GitHub.
 
+```sh
 ./add_secrets.sh --civit "YOUR_CIVITAI_KEY" --hf "YOUR_HUGGINGFACE_KEY"
+```
 
 3. Start Downloading
 
 Run the main script. It will read models.json and download everything to the specified directories.
 
+```sh
 ./download_models.sh
+```
 
 The script will automatically skip any files that you have already downloaded.
 
-✏️ Customizing the Model List
+### ✏️ Customizing the Model List
+
 To add, remove, or change models, you only need to edit the models.json file.
 
 Add a model: Add a new block to the models list.
 
-Set the type: Use "checkpoint", "lora", "vae", or "controlnet" to save it to the correct folder.
+Set the type: Use `checkpoint`, `lora`, `vae`, or `controlnet` to save it to the correct folder.
 
 Set the filename: Choose a clean name for the downloaded file.
 
+```json
 {
   "url": "[https://civitai.com/models/](https://civitai.com/models/)...",
   "type": "lora",
   "filename": "my_favorite_lora.safetensors"
 }
+```
