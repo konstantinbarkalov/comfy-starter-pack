@@ -66,6 +66,21 @@
       "url": "https://civitai.com/api/download/models/85831?type=Model&format=SafeTensor&size=full&fp=fp16",
       "type": "checkpoint",
       "filename": "product_design_minimalism.safetensors"
+    },
+    {
+      "url": "https://civitai.com/api/download/models/14856?type=Model&format=SafeTensor&size=full&fp=fp16",
+      "type": "lora",
+      "filename": "MoXinV1.safetensors"
+    },
+    {
+      "url": "https://civitai.com/api/download/models/32988?type=Model&format=SafeTensor&size=full&fp=fp16",
+      "type": "lora",
+      "filename": "blindbox_v1_mix.safetensors"
+    },
+    {
+      "url": "https://civitai.com/api/download/models/128713?type=Model&format=SafeTensor&size=pruned&fp=fp16",
+      "type": "checkpoint",
+      "filename": "dreamshaper_8.safetensors"
     }
   ]
 }
